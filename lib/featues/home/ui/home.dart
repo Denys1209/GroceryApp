@@ -1,6 +1,9 @@
 import 'package:bloc_project_test/core/Constants/Constants.dart';
+import 'package:bloc_project_test/domain/repository/product_repository.dart';
+import 'package:bloc_project_test/domain/repository/user_repository.dart';
 import 'package:bloc_project_test/featues/home/bloc/home_bloc.dart';
 import 'package:bloc_project_test/featues/home/ui/product_tile_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,11 +16,17 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late HomeBloc homeBloc;
+  late UserRepository userRepository;
 
   @override
   void initState() {
     homeBloc = BlocProvider.of<HomeBloc>(context);
-    homeBloc.add(HomeInitialEvent());
+    userRepository = RepositoryProvider.of<UserRepository>(context);
+    homeBloc.add(
+      HomeInitialEvent(
+        productRepository: ProductRepository(),
+      ),
+    );
     super.initState();
   }
 
@@ -87,7 +96,7 @@ class _HomeState extends State<Home> {
                         icon: const Icon(Icons.shopping_bag_outlined)),
                   ],
                 ),
-                drawer: _drawer(),
+                drawer: _drawer(userRepository.currentUser),
                 body: ListView.builder(
                     itemCount: successState.products.length,
                     itemBuilder: (context, index) {
@@ -123,34 +132,83 @@ class _HomeState extends State<Home> {
     Navigator.pushNamed(context, Constants.wishlistPageRount);
   }
 
-  _drawer() {
+  _drawer(User? user) {
     return Drawer(
       child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.all(0),
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
             ),
-            child: Text('Your account'),
+            child: DrawerHeader(
+              padding: const EdgeInsets.all(0),
+              decoration: const BoxDecoration(
+                color: Constants.drawerColor,
+              ),
+              child: UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(
+                  color: Constants.drawerColor,
+                ),
+                accountName: const Text(
+                  "Abhishek Mishra",
+                  style: TextStyle(fontSize: 18),
+                ),
+                accountEmail: Text("${user?.email}"),
+                currentAccountPictureSize: Size.square(50),
+                currentAccountPicture: const CircleAvatar(
+                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
+                  child: Text(
+                    "A",
+                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
+                  ),
+                ),
+              ),
+            ),
           ),
           ListTile(
-            leading: const Icon(
-              Icons.home,
-            ),
-            title: const Text('Page 1'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: const Icon(
-              Icons.train,
-            ),
-            title: const Text('Page 2'),
+            leading: const Icon(Icons.person),
+            title: const Text('Add a new product'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushNamed(context, Constants.addProcutPageRount);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.workspace_premium),
+            title: const Text(' Go Premium '),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.video_label),
+            title: const Text(' Saved Videos '),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text(' Edit Profile '),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('LogOut'),
+            onTap: () {
+              context.read<UserRepository>().signOut();
+              Navigator.pop(context);
+              Navigator.pushNamed(context, Constants.signUpPageRount);
             },
           ),
         ],

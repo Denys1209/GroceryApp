@@ -1,8 +1,8 @@
 import 'package:bloc_project_test/data/cart_iteams.dart';
 import 'package:bloc_project_test/data/wishlist_items.dart';
+import 'package:bloc_project_test/domain/entities/product_data_model.dart';
 import 'package:bloc_project_test/featues/cart/models/cart_product_data_model.dart';
 import 'package:bloc_project_test/featues/home/bloc/home_bloc.dart';
-import 'package:bloc_project_test/featues/home/models/home_product_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -67,7 +67,7 @@ class _ProductTileWidgetState extends State<ProductTileWidget> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(widget.productDataModel.category),
+              Text(widget.productDataModel.description),
               const SizedBox(
                 height: 20,
               ),

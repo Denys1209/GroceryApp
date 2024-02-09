@@ -4,9 +4,11 @@ import 'package:bloc/bloc.dart';
 import 'package:bloc_project_test/data/cart_iteams.dart';
 import 'package:bloc_project_test/data/grocery_data.dart';
 import 'package:bloc_project_test/data/wishlist_items.dart';
+import 'package:bloc_project_test/domain/entities/product_data_model.dart';
+import 'package:bloc_project_test/domain/repository/product_repository.dart';
 import 'package:bloc_project_test/featues/cart/bloc/cart_bloc.dart';
+import 'package:bloc_project_test/featues/cart/cubit/price_cubit.dart';
 import 'package:bloc_project_test/featues/cart/models/cart_product_data_model.dart';
-import 'package:bloc_project_test/featues/home/models/home_product_data_model.dart';
 import 'package:flutter/material.dart';
 part 'home_event.dart';
 part 'home_state.dart';
@@ -27,11 +29,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   FutureOr<void> homeInitialEvent(
       HomeInitialEvent event, Emitter<HomeState> emit) async {
     emit(HomeLoadingState());
-    await Future.delayed(const Duration(seconds: 3));
-    emit(HomeLoadedSuccessState(
-        products: GroceryData.groceryProducts
-            .map((e) => ProductDataModel.fromMap(e))
-            .toList()));
+    final products = await event.productRepository.getAllProducts();
+    emit(HomeLoadedSuccessState(products: products));
   }
 
   FutureOr<void> homeProductWishlistButtonClickedEvent(
@@ -71,6 +70,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   FutureOr<void> homeClickOnAddProductEvent(
       HomeClickOnAddProductEvent event, Emitter<HomeState> emit) {
     event.clickedProduct.howManyInCart += 1;
+    if (event.priceCubit != null) {
+      event.priceCubit!.add(event.clickedProduct.model.price);
+    }
     emit(HomeClickOnAddProductSate());
   }
 
@@ -78,12 +80,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       HomeClickOnMinusProductEvent event, Emitter<HomeState> emit) {
     if (event.clickedProduct.howManyInCart > 1) {
       event.clickedProduct.howManyInCart -= 1;
+      if (event.priceCubit != null) {
+        event.priceCubit!.minus(event.clickedProduct.model.price);
+      }
       emit(HomeClickOnMinusProductState());
     } else {
       cartItems.remove(event.clickedProduct);
       if (event.cartBloc != null) {
         event.cartBloc!.add(
             CartClickOnMinusProductEvent(clickedProduct: event.clickedProduct));
+      }
+      if (event.priceCubit != null) {
+        event.priceCubit!.minus(event.clickedProduct.model.price);
       }
       emit(HomeRemoveProductState());
     }

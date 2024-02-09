@@ -18,23 +18,43 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   FutureOr<void> cartInitialEvent(
       CartInitialEvent event, Emitter<CartState> emit) async {
     emit(CartLoadingState());
-    emit(CartLoadedSuccesState(products: cartItems));
+    double price = 0;
+    cartItems.forEach((e) => price += e.model.price * e.howManyInCart);
+    emit(
+      CartLoadedSuccesState(
+        products: cartItems,
+      ),
+    );
   }
 
   FutureOr<void> cartClickOnAddProduct(
       CartClickOnAddProductEvent event, Emitter<CartState> emit) {
     event.clickedProduct.howManyInCart += 1;
-    emit(CartLoadedSuccesState(products: cartItems));
+    double price = 0;
+    cartItems.forEach((e) => price += e.model.price * e.howManyInCart);
+    emit(
+      CartLoadedSuccesState(
+        products: cartItems,
+      ),
+    );
   }
 
   FutureOr<void> cartClickOnMinusProduct(
       CartClickOnMinusProductEvent event, Emitter<CartState> emit) {
     if (event.clickedProduct.howManyInCart > 1) {
       event.clickedProduct.howManyInCart -= 1;
-      emit(CartLoadedSuccesState(products: cartItems));
+      emit(
+        CartLoadedSuccesState(
+          products: cartItems,
+        ),
+      );
     } else {
       cartItems.remove(event.clickedProduct);
-      emit(CartLoadedSuccesState(products: cartItems));
+      emit(
+        CartLoadedSuccesState(
+          products: cartItems,
+        ),
+      );
     }
   }
 }
